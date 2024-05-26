@@ -10,6 +10,7 @@ const MapViewer = () => {
   const [open, setOpen] = useState(false);
   const [threshold, setThreshold] = useState();
   const [thresholdTime, setThresholdTime] = useState(1000 * 60 * 1);
+  const [stoppageLocation, setStoppageLocation] = useState([]);
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -27,19 +28,24 @@ const MapViewer = () => {
     });
   };
   const handleSubmit = () => {
+    console.log(threshold);
     setThresholdTime(threshold);
     setOpen(false);
   };
-  const stoppageLocation = data.filter((item, index) => {
-    if (index === data.length - 1) {
-      return false; // Skip last position, as there is no next position
-    }
-    const nextItem = data[index + 1];
-    const timeDiff = nextItem.eventGeneratedTime - item.eventGeneratedTime;
-    return timeDiff >= thresholdTime;
-  });
+  useEffect(()=>{
+    console.log(thresholdTime);
+    const stoppageLocation = data.filter((item, index) => {
+      if (index === data.length - 1) {
+        return false; // Skip last position, as there is no next position
+      }
+      const nextItem = data[index + 1];
+      const timeDiff = nextItem.eventGeneratedTime - item.eventGeneratedTime;
+      return timeDiff >= thresholdTime;
+    });
+    setStoppageLocation(stoppageLocation)
+  }, [thresholdTime])
   
-  console.log(stoppageLocation.length);
+
   useEffect(() => {
     const mapnode = document.getElementById("mapId");
     if (!mapnode) {
@@ -63,7 +69,7 @@ const MapViewer = () => {
         mapRef.current = null;
       }
     };
-  }, []);
+  });
   useEffect(() => {
     if (!mapRef.current) {
       return;
@@ -121,7 +127,7 @@ const MapViewer = () => {
     Object.values(paths).forEach((path) => {
       L.polyline(path, { color: "red", weight: 4 }).addTo(mapRef.current);
     });
-  }, [stoppageLocation]);
+  });
   return (
     <>
       <div className="" style={{ position: "relative" }}>
@@ -151,7 +157,13 @@ const MapViewer = () => {
             style={{ marginBottom: "20px" }}
             onChange={(e) => setThreshold(e.target.value * 1000 * 60)}
           />
-          
+          <TextField
+            type="file"
+            variant="standard"
+            size="small"
+            fullWidth
+            style={{ marginBottom: "20px" }}
+          />
           <Button onClick={handleSubmit} variant="contained" color="primary">
             Submit
           </Button>
