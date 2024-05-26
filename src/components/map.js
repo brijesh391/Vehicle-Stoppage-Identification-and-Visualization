@@ -157,13 +157,7 @@ const MapViewer = () => {
             style={{ marginBottom: "20px" }}
             onChange={(e) => setThreshold(e.target.value * 1000 * 60)}
           />
-          <TextField
-            type="file"
-            variant="standard"
-            size="small"
-            fullWidth
-            style={{ marginBottom: "20px" }}
-          />
+
           <Button onClick={handleSubmit} variant="contained" color="primary">
             Submit
           </Button>
