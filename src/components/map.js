@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import icon from "../assets/loc_icon.png";
 import data from "../assets/output.json";
 
-import { Box, Button, Dialog, DialogContent, TextField } from "@mui/material";
+import { Button, Dialog, DialogContent, TextField } from "@mui/material";
 
 const MapViewer = () => {
   const [open, setOpen] = useState(false);
+  const [threshold, setThreshold] = useState();
   const [thresholdTime, setThresholdTime] = useState(1000 * 60 * 1);
   const handleClickOpen = () => {
     setOpen(true);
@@ -27,6 +27,7 @@ const MapViewer = () => {
     });
   };
   const handleSubmit = () => {
+    setThresholdTime(threshold);
     setOpen(false);
   };
   const stoppageLocation = data.filter((item, index) => {
@@ -38,7 +39,7 @@ const MapViewer = () => {
     return timeDiff >= thresholdTime;
   });
   
-
+  console.log(stoppageLocation.length);
   useEffect(() => {
     const mapnode = document.getElementById("mapId");
     if (!mapnode) {
@@ -145,9 +146,10 @@ const MapViewer = () => {
             label="threshold time in minutes"
             variant="standard"
             size="small"
+            type="number"
             fullWidth
             style={{ marginBottom: "20px" }}
-            onChange={(e) => setThresholdTime(e.target.value * 1000 * 60)}
+            onChange={(e) => setThreshold(e.target.value * 1000 * 60)}
           />
           <TextField
             type="file"
