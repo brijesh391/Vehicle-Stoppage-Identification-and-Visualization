@@ -11,6 +11,9 @@ const MapViewer = () => {
   const [threshold, setThreshold] = useState();
   const [thresholdTime, setThresholdTime] = useState(1000 * 60 * 1);
   const [stoppageLocation, setStoppageLocation] = useState([]);
+  const updatedData = data.sort((a, b) => {
+    return a.eventGeneratedTime - b.eventGeneratedTime;
+  });
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -32,19 +35,21 @@ const MapViewer = () => {
     setThresholdTime(threshold);
     setOpen(false);
   };
-  useEffect(()=>{
+  useEffect(() => {
     console.log(thresholdTime);
-    const stoppageLocation = data.filter((item, index) => {
-      if (index === data.length - 1) {
+    const stoppageLocation = updatedData.filter((item, index) => {
+      if (index === updatedData.length - 1) {
         return false; // Skip last position, as there is no next position
       }
-      const nextItem = data[index + 1];
-      const timeDiff = nextItem.eventGeneratedTime - item.eventGeneratedTime;
+      const nextItem = updatedData[index + 1];
+      const endTime =
+        nextItem.eventGeneratedTime -
+        (nextItem["odometer reading"] - item["odometer reading"]) / item.speed;
+      const timeDiff = endTime - item.eventGeneratedTime;
       return timeDiff >= thresholdTime;
     });
-    setStoppageLocation(stoppageLocation)
-  }, [thresholdTime])
-  
+    setStoppageLocation(stoppageLocation);
+  }, [thresholdTime]);
 
   useEffect(() => {
     const mapnode = document.getElementById("mapId");
@@ -81,17 +86,24 @@ const MapViewer = () => {
       let stoppageDuration = "";
       if (index < stoppageLocation.length - 1) {
         const nextMovementIndex =
-          data.findIndex(
+          updatedData.findIndex(
             (elem) =>
               elem.latitude === stoppageLocation[index].latitude &&
               elem.longitude === stoppageLocation[index].longitude
           ) + 1;
         if (nextMovementIndex !== -1) {
           endTime = new Date(
-            data[nextMovementIndex].eventGeneratedTime
+            // updatedData[nextMovementIndex].eventGeneratedTime
+            updatedData[nextMovementIndex].eventGeneratedTime -
+              (updatedData[nextMovementIndex]["odometer reading"] -
+                item["odometer reading"]) /
+                item.speed
           ).toLocaleString();
           const durationMs =
-            data[nextMovementIndex].eventGeneratedTime -
+            updatedData[nextMovementIndex].eventGeneratedTime -
+            (updatedData[nextMovementIndex]["odometer reading"] -
+              item["odometer reading"]) /
+              item.speed -
             item.eventGeneratedTime;
           const durationMin = Math.floor(durationMs / (1000 * 60));
           if (durationMin > 60) {
@@ -116,7 +128,7 @@ const MapViewer = () => {
         );
     });
 
-    const paths = data.reduce((acc, item) => {
+    const paths = updatedData.reduce((acc, item) => {
       if (!acc[item.EquipmentId]) {
         acc[item.EquipmentId] = [];
       }
